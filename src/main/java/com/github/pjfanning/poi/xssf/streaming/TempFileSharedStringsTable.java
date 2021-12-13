@@ -1,39 +1,17 @@
 package com.github.pjfanning.poi.xssf.streaming;
 
-import com.github.pjfanning.poi.xssf.streaming.cache.SSTCacheH2;
+import com.github.pjfanning.poi.xssf.streaming.cache.h2.SSTCacheH2;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.openxml4j.opc.PackagePart;
 import org.apache.poi.ss.usermodel.RichTextString;
 import org.apache.poi.xssf.model.SharedStringsTable;
 import org.apache.poi.xssf.usermodel.XSSFRelation;
-import org.apache.poi.xssf.usermodel.XSSFRichTextString;
-import org.apache.xmlbeans.XmlException;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTRst;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTSst;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.SstDocument;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLEventReader;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.events.Attribute;
-import javax.xml.stream.events.StartElement;
-import javax.xml.stream.events.XMLEvent;
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
-import java.util.NoSuchElementException;
-
-import static org.apache.poi.xssf.usermodel.XSSFRelation.NS_SPREADSHEETML;
 
 /**
  * Table of strings shared across all sheets in a workbook.

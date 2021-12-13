@@ -1,7 +1,7 @@
 package com.github.pjfanning.poi.xssf.streaming;
 
 import com.github.pjfanning.poi.xssf.streaming.cache.SSTCache;
-import com.github.pjfanning.poi.xssf.streaming.cache.SSTCacheH2;
+import com.github.pjfanning.poi.xssf.streaming.cache.h2.SSTCacheH2;
 import org.apache.poi.ss.usermodel.RichTextString;
 import org.apache.poi.xssf.model.SharedStringsTable;
 import org.apache.poi.xssf.usermodel.XSSFRichTextString;
@@ -181,10 +181,9 @@ public class CachedSharedStringsTable extends SharedStringsTable {
             writer.write("\" xmlns=\"");
             writer.write(NS_SPREADSHEETML);
             writer.write("\">");
-            Iterator<Integer> idIter = sstCache.keyIterator();
-            while (idIter.hasNext()) {
-                Integer stringId = idIter.next();
-                CTRst rst = sstCache.getCTRst(stringId);
+            Iterator<Integer> idIterator = sstCache.keyIterator();
+            while (idIterator.hasNext()) {
+                CTRst rst = sstCache.getCTRst(idIterator.next());
                 if (rst != null) {
                     writer.write(rst.xmlText(siSaveOptions));
                 }

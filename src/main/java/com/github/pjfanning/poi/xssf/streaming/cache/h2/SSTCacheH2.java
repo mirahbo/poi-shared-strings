@@ -1,5 +1,7 @@
-package com.github.pjfanning.poi.xssf.streaming.cache;
+package com.github.pjfanning.poi.xssf.streaming.cache.h2;
 
+import com.github.pjfanning.poi.xssf.streaming.Constants;
+import com.github.pjfanning.poi.xssf.streaming.cache.SSTCache;
 import org.apache.poi.util.TempFile;
 import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
@@ -28,7 +30,7 @@ public class SSTCacheH2 implements SSTCache {
             MVStore.Builder mvStoreBuilder = new MVStore.Builder();
             if (encryptTempFiles) {
                 byte[] bytes = new byte[1024];
-                CacheConstants.RANDOM.nextBytes(bytes);
+                Constants.RANDOM.nextBytes(bytes);
                 mvStoreBuilder.encryptionKey(Base64.getEncoder().encodeToString(bytes).toCharArray());
             }
             mvStoreBuilder.fileName(tempFile.getAbsolutePath());

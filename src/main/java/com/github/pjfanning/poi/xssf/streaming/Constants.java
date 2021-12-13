@@ -11,10 +11,10 @@ import java.util.Collections;
 
 import static org.apache.poi.xssf.usermodel.XSSFRelation.NS_SPREADSHEETML;
 
-class Constants {
-    static final SecureRandom RANDOM = new SecureRandom();
+public class Constants {
+    public static final SecureRandom RANDOM = new SecureRandom();
 
-    static final XmlOptions saveOptions = new XmlOptions();
+    public static final XmlOptions saveOptions = new XmlOptions();
     static {
         saveOptions.setCharacterEncoding("UTF-8");
         saveOptions.setSaveAggressiveNamespaces();
@@ -22,7 +22,7 @@ class Constants {
         saveOptions.setSaveImplicitNamespaces(Collections.singletonMap("", NS_SPREADSHEETML));
     }
 
-    static final XMLInputFactory XML_INPUT_FACTORY = XMLHelper.newXMLInputFactory();
-    static final XMLOutputFactory XML_OUTPUT_FACTORY = XMLHelper.newXMLOutputFactory();
-    static final XMLEventFactory XML_EVENT_FACTORY = XMLHelper.newXMLEventFactory();
+    public static final XMLInputFactory XML_INPUT_FACTORY = XMLHelper.newXMLInputFactory();
+    public static final XMLOutputFactory XML_OUTPUT_FACTORY = XMLHelper.newXMLOutputFactory();
+    public static final XMLEventFactory XML_EVENT_FACTORY = XMLHelper.newXMLEventFactory();
 }
