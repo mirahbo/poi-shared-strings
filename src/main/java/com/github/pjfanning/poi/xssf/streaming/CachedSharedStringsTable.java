@@ -1,7 +1,7 @@
 package com.github.pjfanning.poi.xssf.streaming;
 
-import com.github.pjfanning.poi.xssf.streaming.cache.SSTCache;
-import com.github.pjfanning.poi.xssf.streaming.cache.h2.SSTCacheH2;
+import com.github.pjfanning.poi.xssf.streaming.sst.SSTStore;
+import com.github.pjfanning.poi.xssf.streaming.sst.h2.SSTStoreH2;
 import org.apache.poi.ss.usermodel.RichTextString;
 import org.apache.poi.xssf.model.SharedStringsTable;
 import org.apache.poi.xssf.usermodel.XSSFRichTextString;
@@ -45,12 +45,12 @@ public class CachedSharedStringsTable extends SharedStringsTable {
                 new QName(NS_SPREADSHEETML, "si"));
     }
 
-    private final SSTCache sstCache;
+    private final SSTStore sstStore;
     private final boolean fullFormat;
 
-    private CachedSharedStringsTable(SSTCache sstCache, boolean fullFormat) {
+    private CachedSharedStringsTable(SSTStore sstStore, boolean fullFormat) {
         super();
-        this.sstCache = sstCache;
+        this.sstStore = sstStore;
         this.fullFormat = fullFormat;
     }
 
@@ -181,9 +181,9 @@ public class CachedSharedStringsTable extends SharedStringsTable {
             writer.write("\" xmlns=\"");
             writer.write(NS_SPREADSHEETML);
             writer.write("\">");
-            Iterator<Integer> idIterator = sstCache.keyIterator();
+            Iterator<Integer> idIterator = sstStore.keyIterator();
             while (idIterator.hasNext()) {
-                CTRst rst = sstCache.getCTRst(idIterator.next());
+                CTRst rst = sstStore.getCTRst(idIterator.next());
                 if (rst != null) {
                     writer.write(rst.xmlText(siSaveOptions));
                 }
@@ -200,7 +200,7 @@ public class CachedSharedStringsTable extends SharedStringsTable {
      */
     @Override
     public void close() {
-        sstCache.close();
+        sstStore.close();
     }
 
     private int addEntry(CTRst st, boolean keepDuplicates) {
@@ -209,18 +209,18 @@ public class CachedSharedStringsTable extends SharedStringsTable {
         }
         String s = xmlText(st);
         count++;
-        if (!keepDuplicates && sstCache.containsString(s)) {
-            return sstCache.getStringIndex(s);
+        if (!keepDuplicates && sstStore.containsString(s)) {
+            return sstStore.getStringIndex(s);
         }
 
         int idx = uniqueCount++;
-        sstCache.putStringIndex(s, idx);
-        sstCache.putCTRst(idx, st);
+        sstStore.putStringIndex(s, idx);
+        sstStore.putCTRst(idx, st);
         return idx;
     }
 
     private CTRst getEntryAt(int idx) {
-        CTRst rst = sstCache.getCTRst(idx);
+        CTRst rst = sstStore.getCTRst(idx);
         if (rst == null) {
             throw new NoSuchElementException();
         }
@@ -228,11 +228,11 @@ public class CachedSharedStringsTable extends SharedStringsTable {
     }
 
     public static class Builder {
-        private SSTCache sstCache;
+        private SSTStore sstStore;
         private boolean fullFormat = false;
 
-        public Builder sstCache(SSTCache sstCache) {
-            this.sstCache = sstCache;
+        public Builder sstStore(SSTStore sstStore) {
+            this.sstStore = sstStore;
             return this;
         }
 
@@ -242,12 +242,10 @@ public class CachedSharedStringsTable extends SharedStringsTable {
         }
 
         public CachedSharedStringsTable build() {
-            if (sstCache == null) {
-                sstCache = new SSTCacheH2.Builder()
-                        .encryptTempFiles(false)
-                        .build();
+            if (sstStore == null) {
+                sstStore = new SSTStoreH2(false);
             }
-            return new CachedSharedStringsTable(sstCache, fullFormat);
+            return new CachedSharedStringsTable(sstStore, fullFormat);
         }
     }
 

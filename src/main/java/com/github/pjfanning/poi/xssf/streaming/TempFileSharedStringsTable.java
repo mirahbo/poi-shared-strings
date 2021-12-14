@@ -1,6 +1,6 @@
 package com.github.pjfanning.poi.xssf.streaming;
 
-import com.github.pjfanning.poi.xssf.streaming.cache.h2.SSTCacheH2;
+import com.github.pjfanning.poi.xssf.streaming.sst.h2.SSTStoreH2;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.openxml4j.opc.PackagePart;
 import org.apache.poi.ss.usermodel.RichTextString;
@@ -52,9 +52,7 @@ public class TempFileSharedStringsTable extends SharedStringsTable {
     public TempFileSharedStringsTable(boolean encryptTempFiles, boolean fullFormat) {
         super();
         this.sst = new CachedSharedStringsTable.Builder()
-                .sstCache(new SSTCacheH2.Builder()
-                        .encryptTempFiles(encryptTempFiles)
-                        .build())
+                .sstStore(new SSTStoreH2(encryptTempFiles))
                 .fullFormat(fullFormat)
                 .build();
     }

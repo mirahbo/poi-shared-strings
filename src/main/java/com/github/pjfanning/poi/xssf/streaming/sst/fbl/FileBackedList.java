@@ -1,4 +1,7 @@
-package com.github.pjfanning.poi.xssf.streaming.cache.lru;
+package com.github.pjfanning.poi.xssf.streaming.sst.fbl;
+
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 
 import java.io.File;
 import java.io.IOException;
@@ -7,7 +10,9 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * File-backed list-like class. Allows addition of arbitrary
@@ -30,14 +35,19 @@ public class FileBackedList implements AutoCloseable {
     private final List<Long> pointers = new ArrayList<>();
     private final RandomAccessFile raf;
     private final FileChannel channel;
-    private final LRUCache<Integer, String> cache;
+    private Cache<Integer, String> cache;
     private long filesize;
 
-    public FileBackedList(File file, final int capacity) throws IOException {
+    public FileBackedList(File file, int cacheCapacity) throws IOException {
         this.raf = new RandomAccessFile(file, "rw");
         this.channel = raf.getChannel();
         this.filesize = raf.length();
-        this.cache = new LRUCache<>(capacity);
+
+        if(cacheCapacity > 0) {
+            this.cache = Caffeine.newBuilder()
+                    .maximumSize(cacheCapacity)
+                    .build();
+        }
     }
 
     public void add(String str) {
@@ -48,22 +58,35 @@ public class FileBackedList implements AutoCloseable {
         }
     }
 
-    public String getAt(int index) {
-        String s = cache.get(index);
-        if (s != null) {
-            return s;
+    public String getAt(Integer index) {
+        if (cache != null) {
+            String s = cache.getIfPresent(index);
+            if (s != null) {
+                return s;
+            }
         }
         try {
             String value = readFromFile(pointers.get(index));
-            cache.put(index, value);
+            if(cache != null) {
+                cache.put(index, value);
+            }
             return value;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public Integer size() {
-        return pointers.size();
+    public Iterator<Integer> keyIterator() {
+        return new KeyIterator(pointers.size());
+    }
+
+    @Override
+    public void close() {
+        try {
+            raf.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void writeToFile(String str) throws IOException {
@@ -100,12 +123,34 @@ public class FileBackedList implements AutoCloseable {
         }
     }
 
-    @Override
-    public void close() {
-        try {
-            raf.close();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+    private static class KeyIterator implements Iterator<Integer> {
+
+        private final int size;
+        private Integer counter = -1;
+
+        public KeyIterator(int size) {
+            this.size = size;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return counter < size - 1;
+        }
+
+        @Override
+        public Integer next() {
+            counter++;
+            return counter;
+        }
+
+        @Override
+        public void remove() {
+            throw new IllegalStateException("Operation not supported");
+        }
+
+        @Override
+        public void forEachRemaining(Consumer action) {
+            throw new IllegalStateException("Operation not supported");
         }
     }
 }

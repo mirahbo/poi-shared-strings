@@ -1,4 +1,4 @@
-package com.github.pjfanning.poi.xssf.streaming.cache.lru;
+package com.github.pjfanning.poi.xssf.streaming.sst.fbl;
 
 import com.github.pjfanning.poi.xssf.streaming.CachedSharedStringsTable;
 import com.github.pjfanning.poi.xssf.streaming.TempFileSharedStringsTable;
@@ -22,7 +22,7 @@ import java.util.UUID;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
-public class SSTCacheLRUTest {
+public class SSTStoreFBLTest {
     @Test
     public void testWriteOut() throws Exception {
         testWriteOut(false);
@@ -66,7 +66,7 @@ public class SSTCacheLRUTest {
     @Test(expected = NoSuchElementException.class)
     public void testReadMissingEntry() throws Exception {
         try (CachedSharedStringsTable sst = new CachedSharedStringsTable.Builder()
-                .sstCache(new SSTCacheLRU.Builder().build())
+                .sstStore(new SSTStoreFBL())
                 .build()) {
             RichTextString rts = sst.getItemAt(0);
         }
@@ -75,7 +75,7 @@ public class SSTCacheLRUTest {
     @Test(expected = NoSuchElementException.class)
     public void testReadMissingEntryFullFormat() throws Exception {
         try (CachedSharedStringsTable sst = new CachedSharedStringsTable.Builder()
-                .sstCache(new SSTCacheLRU.Builder().build())
+                .sstStore(new SSTStoreFBL())
                 .fullFormat(true)
                 .build()) {
             RichTextString rts = sst.getItemAt(0);
@@ -98,7 +98,7 @@ public class SSTCacheLRUTest {
         try (
                 UnsynchronizedByteArrayOutputStream bos = new UnsynchronizedByteArrayOutputStream();
                 CachedSharedStringsTable sst = new CachedSharedStringsTable.Builder()
-                        .sstCache(new SSTCacheLRU.Builder().build())
+                        .sstStore(new SSTStoreFBL())
                         .fullFormat(fullFormat)
                         .build();
         ) {
@@ -111,7 +111,7 @@ public class SSTCacheLRUTest {
             String out = bos.toString(StandardCharsets.UTF_8);
             assertFalse("sst output should not contain xml-fragment", out.contains("xml-fragment"));
             try (CachedSharedStringsTable sst2 = new CachedSharedStringsTable.Builder()
-                    .sstCache(new SSTCacheLRU.Builder().build())
+                    .sstStore(new SSTStoreFBL())
                     .fullFormat(fullFormat)
                     .build()) {
                 sst2.readFrom(bos.toInputStream());
@@ -123,7 +123,7 @@ public class SSTCacheLRUTest {
     private void testReadOOXMLStrict(boolean fullFormat) throws Exception {
         try (InputStream is = TestTempFileSharedStringsTable.class.getClassLoader().getResourceAsStream("strictSharedStrings.xml");
              CachedSharedStringsTable sst = new CachedSharedStringsTable.Builder()
-                     .sstCache(new SSTCacheLRU.Builder().build())
+                     .sstStore(new SSTStoreFBL())
                      .fullFormat(fullFormat)
                      .build()) {
             sst.readFrom(is);
@@ -140,7 +140,7 @@ public class SSTCacheLRUTest {
     private void testReadStyledXML(boolean fullFormat) throws Exception {
         try (InputStream is = TestTempFileSharedStringsTable.class.getClassLoader().getResourceAsStream("styledSharedStrings.xml");
              CachedSharedStringsTable sst = new CachedSharedStringsTable.Builder()
-                     .sstCache(new SSTCacheLRU.Builder().build())
+                     .sstStore(new SSTStoreFBL())
                      .fullFormat(fullFormat)
                      .build()) {
             sst.readFrom(is);
@@ -153,7 +153,7 @@ public class SSTCacheLRUTest {
     private void testReadXML(boolean fullFormat) throws Exception {
         try (InputStream is = TestTempFileSharedStringsTable.class.getClassLoader().getResourceAsStream("sharedStrings.xml");
              CachedSharedStringsTable sst = new CachedSharedStringsTable.Builder()
-                     .sstCache(new SSTCacheLRU.Builder().build())
+                     .sstStore(new SSTStoreFBL())
                      .fullFormat(fullFormat)
                      .build()) {
             sst.readFrom(is);
@@ -165,7 +165,7 @@ public class SSTCacheLRUTest {
 
     private void testWriteOut(boolean fullFormat) throws Exception {
         try (CachedSharedStringsTable sst = new CachedSharedStringsTable.Builder()
-                .sstCache(new SSTCacheLRU.Builder().build())
+                .sstStore(new SSTStoreFBL())
                 .fullFormat(fullFormat)
                 .build()) {
             sst.addSharedStringItem(new XSSFRichTextString("First string"));
@@ -180,12 +180,12 @@ public class SSTCacheLRUTest {
             font.setBold(true);
             rts.applyFont(font);
             sst.addSharedStringItem(rts);
-            assertEquals(7, sst.getUniqueCount()); // We do not support unique counts
+            assertEquals(3, sst.getUniqueCount());
             assertEquals(7, sst.getCount());
             try (UnsynchronizedByteArrayOutputStream bos = new UnsynchronizedByteArrayOutputStream()) {
                 sst.writeTo(bos);
                 try (CachedSharedStringsTable sst2 = new CachedSharedStringsTable.Builder()
-                        .sstCache(new SSTCacheLRU.Builder().build())
+                        .sstStore(new SSTStoreFBL())
                         .fullFormat(fullFormat)
                         .build()) {
                     sst2.readFrom(bos.toInputStream());
@@ -212,7 +212,7 @@ public class SSTCacheLRUTest {
         final int limit = 100;
         File tempFile = TempFile.createTempFile("shared-string-stress", ".tmp");
         try (CachedSharedStringsTable sst = new CachedSharedStringsTable.Builder()
-                .sstCache(new SSTCacheLRU.Builder().build())
+                .sstStore(new SSTStoreFBL())
                 .fullFormat(true)
                 .build()) {
             for (int i = 0; i < limit; i++) {

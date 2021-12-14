@@ -1,7 +1,7 @@
-package com.github.pjfanning.poi.xssf.streaming.cache.h2;
+package com.github.pjfanning.poi.xssf.streaming.sst.h2;
 
 import com.github.pjfanning.poi.xssf.streaming.Constants;
-import com.github.pjfanning.poi.xssf.streaming.cache.SSTCache;
+import com.github.pjfanning.poi.xssf.streaming.sst.SSTStore;
 import org.apache.poi.util.TempFile;
 import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
@@ -11,7 +11,7 @@ import java.io.File;
 import java.util.Base64;
 import java.util.Iterator;
 
-public class SSTCacheH2 implements SSTCache {
+public class SSTStoreH2 implements SSTStore {
 
     /**
      * Array of individual string items in the Shared String table.
@@ -24,7 +24,7 @@ public class SSTCacheH2 implements SSTCache {
     private File tempFile;
     private MVStore mvStore;
 
-    private SSTCacheH2(boolean encryptTempFiles) {
+    public SSTStoreH2(boolean encryptTempFiles) {
         try {
             tempFile = TempFile.createTempFile("poi-shared-strings", ".tmp");
             MVStore.Builder mvStoreBuilder = new MVStore.Builder();
@@ -90,19 +90,5 @@ public class SSTCacheH2 implements SSTCache {
     public void close() {
         if(mvStore != null) mvStore.closeImmediately();
         if(tempFile != null) tempFile.delete();
-    }
-
-    public static class Builder {
-
-        private boolean encryptTempFiles = false;
-
-        public Builder encryptTempFiles(boolean encryptTempFiles) {
-            this.encryptTempFiles = encryptTempFiles;
-            return this;
-        }
-
-        public SSTCacheH2 build() {
-            return new SSTCacheH2(encryptTempFiles);
-        }
     }
 }
